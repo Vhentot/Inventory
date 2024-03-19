@@ -1,101 +1,88 @@
-// Getting the checkbox element
-const checkbox = document.getElementById('checkbox');
+const checkbox = document.getElementById('checkbox')
+const tablesSection = document.querySelector('.tablesSection')
 
-// Getting the tables section
-const tablesSection = document.querySelector('.tablesSection');
+const inventoryItems = []
 
-// Array for storing inventory items
-const inventoryItems = [];
-
-// Function for checking if an item exists already
-function checkIfExists(item, inventoryItems) {
-	for (var i = 0; i < inventoryItems.length; i++) {
-		if(item == inventoryItems[i]) {
-			return true;
-		}
-	}
+function checkIfExists(checkItem, inventoryItems) {
+  for (let { item } of inventoryItems)
+    if (checkItem == item) {
+      return true
+    }
 }
 
 // Function for adding new item in the inventory
 inputForm.addEventListener('submit', function (e) {
-	e.preventDefault();
+  e.preventDefault()
 
-	// Getting the item from the input field
-	const item = document.getElementById('item').value;
+  const item = document.getElementById('item').value
+  const quantity = document.getElementById('quantity').value
 
-	// Getting the quantity from the input field
-	const quantity = document.getElementById('quantity').value;
+  // We can't let an input field be empty
+  if (item.length == 0 || quantity.length == 0) {
+    alert('Fill out the form first')
+  }
 
-	// We can't let an input field be empty
-	if(item.length == 0 || quantity.length == 0) {
-		alert("Fill out the form first");
-	}
+  // If all input fields are not empty, go here
+  else {
+    // Check if item already exists
+    if (checkIfExists(item, inventoryItems)) {
+      alert('Item already taken')
+    }
 
-	// If all input fields are not empty, go here
-	else {
+    // If it doesn't exist yet, go here
+    else {
+      let newItem = {
+        item: item,
+        quantity: quantity,
+      }
+      inventoryItems.push(newItem)
 
-		// Check if item already exists
-		if (checkIfExists(item, inventoryItems)) {
-			alert('Item already taken');
-		}
+      const tr = document.createElement('tr')
 
-		// If it doesn't exist yet, go here
-		else {
+      const tdItem = document.createElement('td')
 
-			// push to the inventoryItems list
-			inventoryItems.push(item);
-			console.log(inventoryItems)
+      const tdQty = document.createElement('td')
+      tdQty.setAttribute('data-quantity', quantity)
 
-			// create the table row element for storing items
-			const trElement = document.createElement('tr');
+      tdItem.textContent = item
+      tdQty.textContent = quantity
 
-			// create table data for storing item name
-			const tdElementForItemName = document.createElement('td');
+      tr.appendChild(tdItem)
+      tr.appendChild(tdQty)
 
-			// create table data for storing quantity 
-			const tdElementForQty = document.createElement('td');
-
-			// setting the text content of the item name and quantity
-			tdElementForItemName.textContent = item;
-			tdElementForQty.textContent = quantity;
-
-			// adding to the table data element to the table row
-			trElement.appendChild(tdElementForItemName);
-			trElement.appendChild(tdElementForQty);
-
-			// adding table row element to the table
-			document.querySelector('table').appendChild(trElement);
-		}
-	}
+      // adding table row element to the table
+      document.querySelector('table').appendChild(tr)
+    }
+  }
 })
 
-// Function to modify quantity upon clicking inside the cell
-document.querySelector('table').addEventListener('click', function(e) {
-    if (e.target.tagName === 'TD') {
-        const td = e.target;
-        const tr = td.parentNode; // Parent row
-        const itemName = tr.firstElementChild.textContent; // Get the item name from the first column
-        const columnIndex = Array.from(tr.children).indexOf(td); // Get the column index of the clicked cell
+checkbox.addEventListener('change', function (e) {
+  e.preventDefault()
+  if (checkbox.checked == true) {
+    tablesSection.style.display = 'block'
+  } else {
+    tablesSection.style.display = 'none'
+  }
+})
 
-        // Check if the clicked cell is the quantity cell (second column)
-        if (columnIndex === 1) {
-            const oldValue = parseInt(td.textContent);
-            const newValue = prompt('Enter new quantity:', oldValue);
-            if (newValue !== null && !isNaN(newValue)) {
-                td.textContent = parseInt(newValue);
-            }
-        }
-    }
-});
+let table = document.querySelector('table')
+table.addEventListener('click', function () {
+  let cells = table.querySelectorAll('td[data-quantity]')
+  cells.forEach(cell => {
+    cell.addEventListener('click', function () {
+      let input = document.createElement('input')
+      input.setAttribute('type', 'text')
+      input.value = cell.getAttribute('data-quantity').trim()
+      input.classList.add('input')
 
+      cell.textContent = ''
+      cell.appendChild(input)
 
-// Checkbox event listener
-checkbox.addEventListener('change', function(e) {
-	e.preventDefault();
-	if(checkbox.checked == true) {
-		tablesSection.style.display = "block";
-	}
-	else {
-		tablesSection.style.display = "none";
-	}
-});
+      input.focus() // Automatically focus the input when clicked
+
+      input.onchange = function () {
+        cell.setAttribute('data-quantity', input.value)
+      }
+    })
+  })
+})
